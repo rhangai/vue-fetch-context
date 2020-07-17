@@ -14,10 +14,14 @@ type FetchMixinListTypes = {
 	Result: FetcherMixinListResult;
 };
 
-export type FetcherMixinListFactory<IFetcher> = <T = unknown>(
+export type FetcherMixinListFactory<IFetcher> = <
+	T = unknown,
+	QueryType = unknown
+>(
 	options: FetcherMixinOptions<
 		IFetcher,
 		FetcherMixinListResult<T>,
+		QueryType,
 		FetchMixinListTypes
 	>
 ) => VueConstructor;
