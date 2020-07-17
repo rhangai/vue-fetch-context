@@ -5,7 +5,7 @@ import {
 	Subscription,
 	combineLatest,
 } from "rxjs";
-import { switchMap, tap } from "rxjs/operators";
+import { switchMap, tap, map, catchError } from "rxjs/operators";
 import { Vue, VueConstructor, VueWatchOptions, VuePropOptions } from "../types";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { watch } from "../util/watch";
@@ -118,7 +118,12 @@ export function createFetcherMixinFactory<
 					}),
 					// Observable for the fetcher
 					switchMap((skip: boolean) => {
-						if (skip) return of(null);
+						if (skip) {
+							return of({
+								loading: false,
+								error: null,
+							});
+						}
 
 						// Create the partial context to pass to the fetcher
 						const partialContext: Omit<
@@ -140,23 +145,36 @@ export function createFetcherMixinFactory<
 							this[stateKey].loading = true;
 						}
 						return combineLatest(fetcher$).pipe(
-							switchMap(([fetcher]) => fetch({ fetcher, ...partialContext }))
+							switchMap(([fetcher]) => fetch({ fetcher, ...partialContext })),
+							map((result: any) => ({
+								loading: false,
+								error: null,
+								...result,
+							})),
+							catchError((error: any) => {
+								return of({
+									loading: false,
+									error: error,
+								});
+							})
 						);
 					})
 				);
 
 				const subscription = result$.subscribe({
-					next: (result: any) => {
-						this.$set(this, stateKey, {
-							loading: false,
-							error: null,
-							...result,
-						});
+					next: (state: any) => {
+						this.$set(this, stateKey, { ...state });
 					},
 					error: (error) => {
 						this.$set(this, stateKey, {
 							loading: false,
 							error,
+						});
+					},
+					complete: () => {
+						this.$set(this, stateKey, {
+							loading: false,
+							error: null,
 						});
 					},
 				});

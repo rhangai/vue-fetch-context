@@ -70,6 +70,7 @@ describe("mixins#common", () => {
 			template: `<div></div>`,
 		});
 		const { vm } = testCreateFetcherVm(Test);
+
 		expect(vm.state).toBeDefined();
 		expect(vm.state.error).toBe(error);
 		vm.$destroy();
