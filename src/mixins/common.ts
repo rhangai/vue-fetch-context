@@ -2,12 +2,11 @@ import {
 	Observable,
 	of,
 	MonoTypeOperatorFunction,
-	ObservableInput,
 	Subscription,
 	combineLatest,
 } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
-import { VueConstructor } from "../types";
+import { Vue, VueConstructor } from "../types";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { PropOptions } from "vue/types/umd";
 import { watch } from "../util";
@@ -22,6 +21,7 @@ export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
  * Basic context
  */
 export type FetcherMixinFetchContextBase<IFetcher> = {
+	vm: Vue;
 	fetcher: IFetcher;
 	loader<T>(): MonoTypeOperatorFunction<T>;
 };
@@ -100,6 +100,7 @@ export function createFetcherMixinFactory<
 			},
 			created(this: any) {
 				// Create the fetch function
+				const vm: Vue = this;
 				const fetch = factoryOptions.createFetch(this, options);
 				const fetcher$ = watch<any>(this, () => this.fetchContext.fetcher, {
 					deep: true,
@@ -128,6 +129,7 @@ export function createFetcherMixinFactory<
 						return combineLatest(fetcher$).pipe(
 							switchMap(([fetcher]) =>
 								fetch({
+									vm,
 									loader: loader,
 									fetcher,
 								})
