@@ -6,7 +6,7 @@ describe("plugin", () => {
 		const vue = createLocalVue();
 		vue.use(VueFetcher);
 
-		const component = vue.component("fetcher-provider");
+		const component = vue.component("fetch-context");
 		expect(component).toBeDefined();
 	});
 });

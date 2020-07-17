@@ -1,9 +1,9 @@
 import Vue from "vue";
 import { mount } from "@vue/test-utils";
-import { createFetcherProvider } from "../components/provider";
+import { createFetchContext } from "../components/context";
 import { VueConstructor } from "vue/types/umd";
 
-const FetcherProvider = createFetcherProvider(Vue);
+const FetchContext = createFetchContext(Vue);
 
 type TestCreateFetcherVmOptions = {
 	fetcher?: any;
@@ -17,7 +17,7 @@ export function testCreateFetcherVm(
 	const fetcher = options.fetcher ?? {};
 	const wrapper = mount({
 		components: {
-			FetcherProvider,
+			FetchContext,
 			Test: component,
 		},
 		data: () => ({
@@ -25,15 +25,15 @@ export function testCreateFetcherVm(
 			props: options.props ?? {},
 		}),
 		template: `
-				<fetcher-provider :fetcher="fetcher">
+				<fetch-context :fetcher="fetcher">
 					<test ref="test" v-bind="props" />
-				</fetcher-provider>
+				</fetch-context>
 			`,
 	});
 
 	const testVm: any = wrapper.vm.$refs.test;
 	expect(testVm).toBeDefined();
-	expect(testVm.fetcherProvider).toBeDefined();
-	expect(testVm.fetcherProvider.fetcher).toEqual(fetcher);
+	expect(testVm.fetchContext).toBeDefined();
+	expect(testVm.fetchContext.fetcher).toEqual(fetcher);
 	return testVm;
 }

@@ -1,22 +1,22 @@
 import Vue from "vue";
-import { createFetcherProvider } from "./provider";
+import { createFetchContext } from "./context";
 import { mount } from "@vue/test-utils";
-import { FETCHER_PROVIDE } from "../constants";
+import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { Chance } from "chance";
 
-describe("provider", () => {
-	const FetcherProvider = createFetcherProvider(Vue);
+describe("components#FetchContext", () => {
+	const FetchContext = createFetchContext(Vue);
 	const chance = new Chance();
 
 	it("should be a component", () => {
-		const wrapper = mount(FetcherProvider);
+		const wrapper = mount(FetchContext);
 		expect(wrapper.vm.fetcherValue).toBeDefined();
 	});
 
 	it("should provide", () => {
 		const Test = Vue.extend({
 			inject: {
-				fetcherProvider: FETCHER_PROVIDE,
+				fetchContext: FETCH_CONTEXT_PROVIDE,
 			},
 			template: `<div></div>`,
 		});
@@ -27,29 +27,29 @@ describe("provider", () => {
 		};
 		const wrapper = mount({
 			components: {
-				FetcherProvider,
+				FetchContext,
 				Test,
 			},
 			data: () => ({
 				fetcher,
 			}),
 			template: `
-				<fetcher-provider :fetcher="fetcher">
+				<fetch-context :fetcher="fetcher">
 					<test ref="test" />
-				</fetcher-provider>
+				</fetch-context>
 			`,
 		});
 
 		const testVm: any = wrapper.vm.$refs.test;
 		expect(testVm).toBeDefined();
-		expect(testVm.fetcherProvider).toBeDefined();
-		expect(testVm.fetcherProvider.fetcher).toEqual(fetcher);
+		expect(testVm.fetchContext).toBeDefined();
+		expect(testVm.fetchContext.fetcher).toEqual(fetcher);
 	});
 
 	it("should inherit providers", () => {
 		const Test = Vue.extend({
 			inject: {
-				fetcherProvider: FETCHER_PROVIDE,
+				fetchContext: FETCH_CONTEXT_PROVIDE,
 			},
 			template: `<div></div>`,
 		});
@@ -66,7 +66,7 @@ describe("provider", () => {
 		};
 		const wrapper = mount({
 			components: {
-				FetcherProvider,
+				FetchContext,
 				Test,
 			},
 			data: () => ({
@@ -74,23 +74,23 @@ describe("provider", () => {
 				childFetcher,
 			}),
 			template: `
-				<fetcher-provider :fetcher="parentFetcher">
+				<fetch-context :fetcher="parentFetcher">
 					<test ref="testParent" />
-					<fetcher-provider :fetcher="childFetcher">
+					<fetch-context :fetcher="childFetcher">
 						<test ref="testChild" />
-					</fetcher-provider>
-				</fetcher-provider>
+					</fetch-context>
+				</fetch-context>
 			`,
 		});
 
 		const testParentVm: any = wrapper.vm.$refs.testParent;
 		const testChildVm: any = wrapper.vm.$refs.testChild;
 
-		expect(testParentVm?.fetcherProvider).toBeDefined();
-		expect(testParentVm.fetcherProvider.fetcher).toEqual(parentFetcher);
+		expect(testParentVm?.fetchContext).toBeDefined();
+		expect(testParentVm.fetchContext.fetcher).toEqual(parentFetcher);
 
-		expect(testChildVm?.fetcherProvider).toBeDefined();
-		expect(testChildVm.fetcherProvider.fetcher).toEqual({
+		expect(testChildVm?.fetchContext).toBeDefined();
+		expect(testChildVm.fetchContext.fetcher).toEqual({
 			...parentFetcher,
 			...childFetcher,
 		});

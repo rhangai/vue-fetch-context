@@ -7,7 +7,7 @@ import {
 } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
 import { VueConstructor } from "../types";
-import { FETCHER_PROVIDE } from "../constants";
+import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { PropOptions } from "vue/types/umd";
 import { watch } from "../util";
 
@@ -85,8 +85,8 @@ export function createFetcherMixinFactory<
 				...factoryOptions.props,
 			},
 			inject: {
-				fetcherProvider: {
-					from: FETCHER_PROVIDE,
+				fetchContext: {
+					from: FETCH_CONTEXT_PROVIDE,
 				},
 			},
 			data() {
@@ -123,7 +123,7 @@ export function createFetcherMixinFactory<
 						}
 						return fetch({
 							loader: loader,
-							fetcher: this.fetcherProvider.fetcher,
+							fetcher: this.fetchContext.fetcher,
 						});
 					})
 				);
