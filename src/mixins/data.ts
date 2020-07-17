@@ -23,12 +23,6 @@ export function createFetcherMixinDataFactory<IFetcher>(
 	vue: VueConstructor
 ): FetcherMixinDataFactory<IFetcher> {
 	return createFetcherMixinFactory<IFetcher, FetchMixinDataTypes>(vue, {
-		createFetch(vm, options) {
-			return (context) => {
-				return from(options.fetch({ ...context })).pipe(
-					map((data) => ({ data }))
-				);
-			};
-		},
+		map: (data) => ({ data }),
 	});
 }

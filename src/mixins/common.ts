@@ -4,11 +4,14 @@ import {
 	MonoTypeOperatorFunction,
 	Subscription,
 	combineLatest,
+	ObservableInput,
+	Operator,
 } from "rxjs";
 import { switchMap, tap, map, catchError } from "rxjs/operators";
 import { Vue, VueConstructor, VueWatchOptions, VuePropOptions } from "../types";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { watch } from "../util/watch";
+import { result, ResultOperator } from "../util/result";
 
 export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 	Context: Context;
@@ -19,11 +22,12 @@ export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 /**
  * Basic context
  */
-export type FetcherMixinFetchContextBase<IFetcher> = {
+export type FetcherMixinFetchContextBase<IFetcher, ResultType> = {
 	vm: Vue;
 	fetcher: IFetcher;
 	watch<T>(prop: string | (() => T), options?: VueWatchOptions): Observable<T>;
 	loader<T>(): MonoTypeOperatorFunction<T>;
+	result: ResultOperator<ResultType>;
 };
 
 /**
@@ -31,12 +35,13 @@ export type FetcherMixinFetchContextBase<IFetcher> = {
  */
 export type FetcherMixinFactoryOptions<T extends FetcherMixinTypes> = {
 	props?: Record<string, VuePropOptions>;
-	createFetch(
+	map?: (item: any) => any;
+	createFetch?(
 		vm: Vue,
 		options: FetcherMixinOptions<unknown, T["Result"], T>
 	): (
-		context: FetcherMixinFetchContextBase<unknown>
-	) => Observable<T["Result"]>;
+		context: FetcherMixinFetchContextBase<unknown, T["Result"]>
+	) => FetchResult<T["Result"]>;
 };
 
 // Result when using fetch
@@ -54,7 +59,7 @@ export type FetcherMixinOptions<
 	stateKey?: string;
 	skip?: false | (() => boolean);
 	fetch(
-		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher>
+		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher, ResultType>
 	): FetchResult<ResultType>;
 };
 
@@ -101,12 +106,36 @@ export function createFetcherMixinFactory<
 			created(this: any) {
 				// Create the fetch function
 				const vm: Vue = this;
-				const fetch = factoryOptions.createFetch(this, options);
+
+				// Create the fetch function
+				const fetch = factoryOptions.createFetch
+					? factoryOptions.createFetch(this, options)
+					: options.fetch;
+
 				const fetcher$ = watch<any>(this, () => this.fetchContext.fetcher, {
 					deep: true,
 				});
 
-				const result$ = of(null).pipe(
+				const resultOperator = result({
+					next: (result: any) => {
+						const mapped = factoryOptions.map
+							? factoryOptions.map(result)
+							: result;
+						this.$set(this, stateKey, {
+							loading: false,
+							error: null,
+							...mapped,
+						});
+					},
+					error: (error) => {
+						this.$set(this, stateKey, {
+							loading: false,
+							error,
+						});
+					},
+				});
+
+				const result$: Observable<never> = of(null).pipe(
 					// Observable for skip
 					switchMap(() => {
 						if (options.skip === false) return of(false);
@@ -122,12 +151,12 @@ export function createFetcherMixinFactory<
 							return of({
 								loading: false,
 								error: null,
-							});
+							}).pipe(resultOperator());
 						}
 
 						// Create the partial context to pass to the fetcher
 						const partialContext: Omit<
-							FetcherMixinFetchContextBase<IFetcher>,
+							FetcherMixinFetchContextBase<IFetcher, T["Result"]>,
 							"fetcher"
 						> = {
 							vm,
@@ -139,6 +168,8 @@ export function createFetcherMixinFactory<
 
 							watch: <T>(prop: any, options: any) =>
 								watch<T>(vm, prop, options),
+
+							result: resultOperator,
 						};
 
 						if (options.autoLoader !== false) {
@@ -146,25 +177,12 @@ export function createFetcherMixinFactory<
 						}
 						return combineLatest(fetcher$).pipe(
 							switchMap(([fetcher]) => fetch({ fetcher, ...partialContext })),
-							map((result: any) => ({
-								loading: false,
-								error: null,
-								...result,
-							})),
-							catchError((error: any) => {
-								return of({
-									loading: false,
-									error: error,
-								});
-							})
+							resultOperator()
 						);
 					})
 				);
 
 				const subscription = result$.subscribe({
-					next: (state: any) => {
-						this.$set(this, stateKey, { ...state });
-					},
 					error: (error) => {
 						this.$set(this, stateKey, {
 							loading: false,
