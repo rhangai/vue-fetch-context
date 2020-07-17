@@ -1,5 +1,7 @@
+import VueImported from "vue";
+
+export type Vue = VueImported;
 export {
-	default as Vue,
 	VueConstructor,
 	ComponentOptions as VueComponentOptions,
 	CreateElement as VueCreateElement,

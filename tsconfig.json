@@ -1,11 +1,14 @@
 {
 	"compilerOptions": {
-		"target": "es5",
-		"module": "commonjs",
+		"target": "es2018",
+		"module": "es2015",
 		"moduleResolution": "node",
 		"strict": true,
 		"lib": ["DOM", "es2015"],
 		"esModuleInterop": true,
-		"types": ["jest", "vue-rx"]
+		"declaration": true,
+		"rootDir": "src",
+		"outDir": "dist",
+		"types": ["jest"]
 	}
 }
