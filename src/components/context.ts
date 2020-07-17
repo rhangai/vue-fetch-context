@@ -26,7 +26,7 @@ interface FetchContextComponent<IFetcher> extends Vue {
 /**
  * Create the context component
  */
-export function createFetchContext<IFetcher>(vue: VueConstructor) {
+export function createFetchContextComponent<IFetcher>(vue: VueConstructor) {
 	return vue.extend({
 		name: "FetchContext",
 		inject: {

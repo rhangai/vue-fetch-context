@@ -1,8 +1,8 @@
 import { Vue, VuePlugin } from "./types";
-import { createFetchContext } from "./components/context";
+import { createFetchContextComponent } from "./components/context";
 
 export const VueFetchContext: VuePlugin<Vue> = {
 	install(vue) {
-		vue.component("fetch-context", createFetchContext(vue));
+		vue.component("fetch-context", createFetchContextComponent(vue));
 	},
 };

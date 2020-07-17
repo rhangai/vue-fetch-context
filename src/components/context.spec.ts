@@ -1,11 +1,11 @@
 import Vue from "vue";
-import { createFetchContext } from "./context";
+import { createFetchContextComponent } from "./context";
 import { mount } from "@vue/test-utils";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { Chance } from "chance";
 
 describe("components#FetchContext", () => {
-	const FetchContext = createFetchContext(Vue);
+	const FetchContext = createFetchContextComponent(Vue);
 	const chance = new Chance();
 	const Test = Vue.extend({
 		inject: {
