@@ -1,14 +1,14 @@
 import Vue from "vue";
 import { Chance } from "chance";
 import { testCreateFetcherVm } from "../test/fetcher";
-import { createFetcherMixinDataFactory } from "./data";
+import { createFetcherMixinDataFactory, FetcherMixinDataFactory } from "./data";
 import { of, NEVER, throwError } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
 describe("mixins#data", () => {
 	const chance = new Chance();
 	const FetcherMixinData = createFetcherMixinDataFactory(Vue);
-	it("should provide", () => {
+	it("should provide data", () => {
 		const Test = Vue.extend({
 			mixins: [
 				FetcherMixinData({
@@ -30,81 +30,5 @@ describe("mixins#data", () => {
 		expect(vm.state.data).toBe(fetcher.string);
 
 		vm.$destroy();
-	});
-
-	it("should provide with loading", async () => {
-		const Test = Vue.extend({
-			mixins: [
-				FetcherMixinData({
-					fetch({ fetcher, loader }: any) {
-						return of(null).pipe(
-							loader(),
-							switchMap(() => NEVER)
-						);
-					},
-				}),
-			],
-			template: `<div></div>`,
-		});
-		const vm = testCreateFetcherVm(Test);
-		expect(vm.state).toBeDefined();
-		expect(vm.state.loading).toBe(true);
-		vm.$destroy();
-	});
-
-	it("should error", async () => {
-		const error = new Error();
-		const Test = Vue.extend({
-			mixins: [
-				FetcherMixinData({
-					fetch() {
-						return throwError(error);
-					},
-				}),
-			],
-			template: `<div></div>`,
-		});
-		const vm = testCreateFetcherVm(Test);
-		expect(vm.state).toBeDefined();
-		expect(vm.state.error).toBe(error);
-		vm.$destroy();
-	});
-
-	describe("skip", () => {
-		it("should skip", async () => {
-			const data = chance.string();
-			const Test = Vue.extend({
-				mixins: [
-					FetcherMixinData({
-						skip: () => true,
-						fetch() {
-							return of(data);
-						},
-					}),
-				],
-				template: `<div></div>`,
-			});
-			const vm = testCreateFetcherVm(Test);
-			expect(vm.state.data).toBeUndefined();
-			vm.$destroy();
-		});
-
-		it("should force no-skip", async () => {
-			const data = chance.string();
-			const Test = Vue.extend({
-				mixins: [
-					FetcherMixinData({
-						skip: false,
-						fetch() {
-							return of(data);
-						},
-					}),
-				],
-				template: `<div></div>`,
-			});
-			const vm = testCreateFetcherVm(Test);
-			expect(vm.state.data).toBe(data);
-			vm.$destroy();
-		});
 	});
 });

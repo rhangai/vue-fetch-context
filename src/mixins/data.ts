@@ -1,9 +1,9 @@
 import { VueConstructor } from "../types";
-import { createFetcherMixinFactory, FetcherMixinOptions } from "./factory";
+import { createFetcherMixin, FetcherMixinOptions } from "./common";
 import { from } from "rxjs";
 import { map } from "rxjs/operators";
 
-type FetchMixinDataFactoryInfo = {
+type FetchMixinDataTypes = {
 	Context: {};
 	Options: {};
 	Result: unknown;
@@ -15,16 +15,20 @@ export type FetcherMixinDataFactory<IFetcher> = <T = unknown>(
 	options: FetcherMixinOptions<
 		IFetcher,
 		FetcherMixinDataResult<T>,
-		FetchMixinDataFactoryInfo
+		FetchMixinDataTypes
 	>
 ) => VueConstructor;
 
-export const createFetcherMixinDataFactory = createFetcherMixinFactory({
-	createFetch(vm, options) {
-		return (context) => {
-			return from(options.fetch({ ...context })).pipe(
-				map((data) => ({ data }))
-			);
-		};
-	},
-});
+export function createFetcherMixinDataFactory<IFetcher>(
+	vue: VueConstructor
+): FetcherMixinDataFactory<IFetcher> {
+	return createFetcherMixin<IFetcher, FetchMixinDataTypes>(vue, {
+		createFetch(vm, options) {
+			return (context) => {
+				return from(options.fetch({ ...context })).pipe(
+					map((data) => ({ data }))
+				);
+			};
+		},
+	});
+}
