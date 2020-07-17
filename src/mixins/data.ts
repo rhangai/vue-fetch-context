@@ -1,6 +1,6 @@
 import { VueConstructor } from "../types";
 import { createFetcherMixinFactory, FetcherMixinOptions } from "./factory";
-import { defer } from "rxjs";
+import { from } from "rxjs";
 import { map } from "rxjs/operators";
 
 type FetchMixinDataFactoryInfo = {
@@ -22,7 +22,7 @@ export type FetcherMixinDataFactory<IFetcher> = <T = unknown>(
 export const createFetcherMixinDataFactory = createFetcherMixinFactory({
 	createFetch(vm, options) {
 		return (context) => {
-			return defer(() => options.fetch({ ...context })).pipe(
+			return from(options.fetch({ ...context })).pipe(
 				map((data) => ({ data }))
 			);
 		};

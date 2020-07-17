@@ -3,6 +3,7 @@ import {
 	of,
 	MonoTypeOperatorFunction,
 	ObservableInput,
+	Subscription,
 } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
 import { VueConstructor } from "../types";
@@ -88,7 +89,7 @@ export function createFetcherMixinFactory<T extends FetcherMixinTypeInfo>(
 					};
 				},
 				created(this: any) {
-					// Observe if you should skip the fetch of items
+					// Create the fetch function
 					const fetch = factoryOptions.createFetch(this, options);
 
 					const result$ = of(null).pipe(
@@ -118,21 +119,28 @@ export function createFetcherMixinFactory<T extends FetcherMixinTypeInfo>(
 						})
 					);
 
-					result$.subscribe({
+					const subscription = result$.subscribe({
 						next: (result: any) => {
-							this.$set(stateKey, {
+							this.$set(this, stateKey, {
 								loading: false,
 								error: null,
 								...result,
 							});
 						},
 						error: (error) => {
-							this.$set(stateKey, {
+							this.$set(this, stateKey, {
 								loading: false,
 								error,
 							});
 						},
 					});
+
+					this.$_vueFetcherSubscription =
+						this.$_vueFetcherSubscription ?? new Subscription();
+					this.$_vueFetcherSubscription.add(subscription);
+				},
+				beforeDestroy() {
+					this.$_vueFetcherSubscription.unsubscribe();
 				},
 				methods: {},
 			});
