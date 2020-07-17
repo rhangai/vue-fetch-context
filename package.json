@@ -1,0 +1,15 @@
+{
+  "name": "@rhangai/vue-fetcher",
+  "version": "0.0.1",
+  "description": "Fetch data on components using contexts",
+  "main": "index.js",
+  "author": "rhangai <hangai.renan@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "rxjs": "^6.6.0",
+    "typescript": "^3.9.7",
+    "vue": "^2.6.11"
+  }
+}

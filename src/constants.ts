@@ -1,0 +1,1 @@
+export const FETCHER_PROVIDE = "FETCHER-PROVIDE-";
