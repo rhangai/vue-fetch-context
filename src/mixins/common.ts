@@ -22,7 +22,7 @@ export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 /**
  * Basic context
  */
-export type FetcherMixinFetchContextBase<IFetcher, ResultType> = {
+export type FetcherMixinFetchContextBase<IFetcher> = {
 	vm: Vue;
 	fetcher: IFetcher;
 	watch<T>(prop: string | (() => T), options?: VueWatchOptions): Observable<T>;
@@ -39,7 +39,7 @@ export type FetcherMixinFactoryOptions<T extends FetcherMixinTypes> = {
 		vm: Vue,
 		options: FetcherMixinOptions<unknown, T["Result"], unknown, T>
 	): (
-		context: FetcherMixinFetchContextBase<unknown, T["Result"]> & {
+		context: FetcherMixinFetchContextBase<unknown> & {
 			query: unknown;
 		}
 	) => FetchResult<T["Result"]>;
@@ -66,7 +66,7 @@ export type FetcherMixinOptions<
 	 * @param context
 	 */
 	query?(
-		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher, ResultType>
+		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher>
 	): FetchResult<QueryType>;
 
 	/**
@@ -75,7 +75,7 @@ export type FetcherMixinOptions<
 	 */
 	fetch(
 		context: T["Context"] &
-			FetcherMixinFetchContextBase<IFetcher, ResultType> & { query: QueryType }
+			FetcherMixinFetchContextBase<IFetcher> & { query: QueryType }
 	): FetchResult<ResultType>;
 };
 
@@ -102,6 +102,9 @@ export function createFetcherMixinFactory<
 				? paramFactoryOptions(options)
 				: { ...paramFactoryOptions };
 
+		/**
+		 * Create the mixin
+		 */
 		const mixin = vue.extend({
 			props: {
 				...factoryOptions.props,
@@ -119,6 +122,12 @@ export function createFetcherMixinFactory<
 					},
 				};
 			},
+			computed: {
+				fetcher() {
+					// @ts-ignore
+					return this.fetchContext.fetcher;
+				},
+			},
 			created(this: any) {
 				// Create the fetch function
 				const vm: Vue = this;
@@ -133,9 +142,7 @@ export function createFetcherMixinFactory<
 					: options.fetch;
 
 				// Observe the fetcher
-				const fetcher$ = watch<any>(this, () => this.fetchContext.fetcher, {
-					deep: true,
-				});
+				const fetcher$ = this.fetchContext.fetcher$;
 
 				const result = createResultSubject({
 					next: (result: any) => {
@@ -174,16 +181,19 @@ export function createFetcherMixinFactory<
 
 						// Create the partial context to pass to fetch/query functions
 						const partialContext: Omit<
-							FetcherMixinFetchContextBase<IFetcher, T["Result"]>,
+							FetcherMixinFetchContextBase<IFetcher>,
 							"fetcher"
 						> = {
+							// Current component
 							vm,
 
+							// Trigger the loading
 							loader: <T>() =>
 								tap<T>(() => {
 									this[stateKey].loading = true;
 								}),
 
+							// Observe a prop or expression
 							watch: <T>(prop: any, options: any) =>
 								watch<T>(vm, prop, options),
 						};
@@ -233,19 +243,15 @@ export function createFetcherMixinFactory<
 			/**
 			 * Before destroying the mixin, unsubscribe from everything
 			 */
-			beforeDestroy() {
-				if (this.$_vueFetcherSubscription) {
-					this.$_vueFetcherSubscription.unsubscribe();
-					this.$_vueFetcherSubscription = null;
-				}
-			},
+			beforeDestroy() {},
 			methods: {
 				/**
 				 * Triggers a refresh of the state.
 				 */
 				[`${stateKey}Refresh`]() {
 					// Trigger a refresh
-					this[`${stateKey}Refresh`]?.next(null);
+					// @ts-ignore
+					this[`${stateKey}State`]?.next(null);
 				},
 			},
 		});
