@@ -29,9 +29,7 @@ export type FetcherMixinFetchContextBase<IFetcher> = {
  * Options for the factory
  */
 export type FetcherMixinFactoryOptions<T extends FetcherMixinTypes> = {
-	props?: (
-		options: FetcherMixinOptions<unknown, T["Result"], T>
-	) => Record<string, PropOptions>;
+	props?: Record<string, PropOptions>;
 	createFetch(
 		vm: Vue,
 		options: FetcherMixinOptions<unknown, T["Result"], T>
@@ -66,14 +64,25 @@ export type FetcherMixinOptions<
 export function createFetcherMixinFactory<
 	IFetcher,
 	T extends FetcherMixinTypes
->(vue: VueConstructor, factoryOptions: FetcherMixinFactoryOptions<T>) {
+>(
+	vue: VueConstructor,
+	paramFactoryOptions:
+		| FetcherMixinFactoryOptions<T>
+		| ((
+				options: FetcherMixinOptions<IFetcher, T["Result"], T>
+		  ) => FetcherMixinFactoryOptions<T>)
+) {
 	// Return the mixin factory
 	return (options: FetcherMixinOptions<IFetcher, T["Result"], T>) => {
 		const stateKey = options.stateKey ?? "state";
+		const factoryOptions =
+			typeof paramFactoryOptions === "function"
+				? paramFactoryOptions(options)
+				: { ...paramFactoryOptions };
 
 		const mixin = vue.extend({
 			props: {
-				...factoryOptions.props?.(options),
+				...factoryOptions.props,
 			},
 			inject: {
 				fetcherProvider: {

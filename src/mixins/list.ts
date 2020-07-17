@@ -8,7 +8,9 @@ export type FetcherMixinListResult<T = unknown> = { items: T[] };
 
 type FetchMixinListTypes = {
 	Context: {};
-	Options: {};
+	Options: {
+		propItems?: string | null;
+	};
 	Result: FetcherMixinListResult;
 };
 
@@ -23,25 +25,29 @@ export type FetcherMixinListFactory<IFetcher> = <T = unknown>(
 export function createFetcherMixinListFactory<IFetcher>(
 	vue: VueConstructor
 ): FetcherMixinListFactory<IFetcher> {
-	return createFetcherMixinFactory<IFetcher, FetchMixinListTypes>(vue, {
-		props(options) {
+	return createFetcherMixinFactory<IFetcher, FetchMixinListTypes>(
+		vue,
+		(options) => {
+			const propItems = options.propItems ?? "items";
 			return {
-				items: {
-					type: Array,
-					default: null,
+				props: {
+					[propItems]: {
+						type: Array,
+						default: null,
+					},
+				},
+				createFetch(vm, { fetch }) {
+					const items$ = watch<unknown[] | null>(vm, propItems);
+					return (context) => {
+						return items$.pipe(
+							switchMap((items) => {
+								if (items != null) return of({ items });
+								return fetch({ ...context });
+							})
+						);
+					};
 				},
 			};
-		},
-		createFetch(vm, options) {
-			const items$ = watch<unknown[] | null>(vm, "items");
-			return (context) => {
-				return items$.pipe(
-					switchMap((items) => {
-						if (items != null) return of({ items });
-						return options.fetch({ ...context });
-					})
-				);
-			};
-		},
-	});
+		}
+	);
 }

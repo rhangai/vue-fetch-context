@@ -36,29 +36,37 @@ describe("mixins#list", () => {
 	});
 
 	it("should skip fetcher when items prop are passed", () => {
-		const propItems = chance.n(chance.string, 5);
-		const Test = Vue.extend({
-			mixins: [
-				FetcherMixinList({
-					fetch() {
-						return throwError(new Error());
-					},
-				}),
-			],
-			template: `<div></div>`,
-		});
-		const fetcher: FetcherTest = {
-			items: chance.n(chance.string, 5),
+		const randomPropItems = chance.word();
+		const propItems = {
+			items: null,
+			[randomPropItems]: randomPropItems,
 		};
-		const vm = testCreateFetcherVm(Test, {
-			fetcher,
-			props: { items: propItems },
-		});
-		expect(vm.state).toBeDefined();
-		expect(vm.state.loading).toBe(false);
-		expect(vm.state.error).toBe(null);
-		expect(vm.state.items).toBe(propItems);
 
-		vm.$destroy();
+		const items = chance.n(chance.string, 5);
+		for (const [key, value] of Object.entries(propItems)) {
+			const Test = Vue.extend({
+				mixins: [
+					FetcherMixinList({
+						propItems: value,
+						fetch() {
+							return throwError(new Error());
+						},
+					}),
+				],
+				template: `<div></div>`,
+			});
+			const fetcher: FetcherTest = {
+				items: chance.n(chance.string, 5),
+			};
+			const vm = testCreateFetcherVm(Test, {
+				fetcher,
+				props: { [key]: items },
+			});
+			expect(vm.state).toBeDefined();
+			expect(vm.state.loading).toBe(false);
+			expect(vm.state.error).toBe(null);
+			expect(vm.state.items).toBe(items);
+			vm.$destroy();
+		}
 	});
 });
