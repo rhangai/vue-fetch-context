@@ -4,6 +4,7 @@ import {
 	MonoTypeOperatorFunction,
 	ObservableInput,
 	Subscription,
+	combineLatest,
 } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
 import { VueConstructor } from "../types";
@@ -100,6 +101,9 @@ export function createFetcherMixinFactory<
 			created(this: any) {
 				// Create the fetch function
 				const fetch = factoryOptions.createFetch(this, options);
+				const fetcher$ = watch<any>(this, () => this.fetchContext.fetcher, {
+					deep: true,
+				});
 
 				const result$ = of(null).pipe(
 					// Observable for skip
@@ -121,10 +125,14 @@ export function createFetcherMixinFactory<
 						if (options.autoLoader !== false) {
 							this[stateKey].loading = true;
 						}
-						return fetch({
-							loader: loader,
-							fetcher: this.fetchContext.fetcher,
-						});
+						return combineLatest(fetcher$).pipe(
+							switchMap(([fetcher]) =>
+								fetch({
+									loader: loader,
+									fetcher,
+								})
+							)
+						);
 					})
 				);
 

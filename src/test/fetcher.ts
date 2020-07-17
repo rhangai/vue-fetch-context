@@ -13,7 +13,7 @@ type TestCreateFetcherVmOptions = {
 export function testCreateFetcherVm(
 	component: VueConstructor,
 	options: TestCreateFetcherVmOptions = {}
-): any {
+): { vm: any; wrapperVm: any } {
 	const fetcher = options.fetcher ?? {};
 	const wrapper = mount({
 		components: {
@@ -35,5 +35,5 @@ export function testCreateFetcherVm(
 	expect(testVm).toBeDefined();
 	expect(testVm.fetchContext).toBeDefined();
 	expect(testVm.fetchContext.fetcher).toEqual(fetcher);
-	return testVm;
+	return { vm: testVm, wrapperVm: wrapper.vm };
 }

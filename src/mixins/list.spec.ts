@@ -26,7 +26,7 @@ describe("mixins#list", () => {
 		const fetcher: FetcherTest = {
 			items: chance.n(chance.string, 5),
 		};
-		const vm = testCreateFetcherVm(Test, { fetcher });
+		const { vm } = testCreateFetcherVm(Test, { fetcher });
 		expect(vm.state).toBeDefined();
 		expect(vm.state.loading).toBe(false);
 		expect(vm.state.error).toBe(null);
@@ -58,7 +58,7 @@ describe("mixins#list", () => {
 			const fetcher: FetcherTest = {
 				items: chance.n(chance.string, 5),
 			};
-			const vm = testCreateFetcherVm(Test, {
+			const { vm } = testCreateFetcherVm(Test, {
 				fetcher,
 				props: { [key]: items },
 			});

@@ -28,7 +28,7 @@ describe("mixins#common", () => {
 			string: chance.string(),
 			number: chance.integer(),
 		};
-		const vm = testCreateFetcherVm(Test, { fetcher });
+		const { vm } = testCreateFetcherVm(Test, { fetcher });
 		expect(vm.state).toBeDefined();
 		expect(vm.state.loading).toBe(false);
 		expect(vm.state.error).toBe(null);
@@ -51,7 +51,7 @@ describe("mixins#common", () => {
 			],
 			template: `<div></div>`,
 		});
-		const vm = testCreateFetcherVm(Test);
+		const { vm } = testCreateFetcherVm(Test);
 		expect(vm.state).toBeDefined();
 		expect(vm.state.loading).toBe(true);
 		vm.$destroy();
@@ -69,10 +69,32 @@ describe("mixins#common", () => {
 			],
 			template: `<div></div>`,
 		});
-		const vm = testCreateFetcherVm(Test);
+		const { vm } = testCreateFetcherVm(Test);
 		expect(vm.state).toBeDefined();
 		expect(vm.state.error).toBe(error);
 		vm.$destroy();
+	});
+
+	it("should react", async () => {
+		let counter = 0;
+		const Test = Vue.extend({
+			mixins: [
+				FetcherCommonMixin({
+					fetch({ fetcher }: any) {
+						counter += 1;
+						return of([]);
+					},
+				}),
+			],
+			template: `<div></div>`,
+		});
+		const { vm, wrapperVm } = testCreateFetcherVm(Test);
+		wrapperVm.fetcher = { new: true };
+		await wrapperVm.$nextTick();
+		wrapperVm.fetcher.new = false;
+		await wrapperVm.$nextTick();
+		vm.$destroy();
+		expect(counter).toBe(3);
 	});
 
 	describe("skip", () => {
@@ -89,7 +111,7 @@ describe("mixins#common", () => {
 				],
 				template: `<div></div>`,
 			});
-			const vm = testCreateFetcherVm(Test);
+			const { vm } = testCreateFetcherVm(Test);
 			expect(vm.state.data).toBeUndefined();
 			vm.$destroy();
 		});
@@ -107,7 +129,7 @@ describe("mixins#common", () => {
 				],
 				template: `<div></div>`,
 			});
-			const vm = testCreateFetcherVm(Test);
+			const { vm } = testCreateFetcherVm(Test);
 			expect(vm.state.result).toBe(data);
 			vm.$destroy();
 		});
