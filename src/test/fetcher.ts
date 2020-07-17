@@ -1,9 +1,9 @@
 import Vue from "vue";
 import { mount } from "@vue/test-utils";
-import { createFetchContext } from "../components/context";
+import { createFetchContextComponent } from "../components/context";
 import { VueConstructor } from "vue/types/umd";
 
-const FetchContext = createFetchContext(Vue);
+const FetchContext = createFetchContextComponent(Vue);
 
 type TestCreateFetcherVmOptions = {
 	fetcher?: any;
