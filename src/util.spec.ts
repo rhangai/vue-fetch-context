@@ -43,12 +43,13 @@ describe("util", () => {
 			});
 			const watcher$ = watch(vm, "value", { immediate: false });
 			const testWatch = async (value: any) => {
+				vm.value = null;
 				const valuePromise = watcher$.pipe(take(1)).toPromise();
-				vm.value = value;
+				vm.$nextTick(() => (vm.value = value));
 				const result = await valuePromise;
 				expect(result).toBe(value);
 			};
-			const values = chance.n(randomValue, 15);
+			const values = chance.n(randomValue, 10);
 			for (const value of values) {
 				await testWatch(value);
 			}
