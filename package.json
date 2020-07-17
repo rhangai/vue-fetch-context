@@ -1,6 +1,6 @@
 {
 	"name": "@rhangai/vue-fetch-context",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Fetch data on components using contexts",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
