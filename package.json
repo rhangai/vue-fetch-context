@@ -6,7 +6,6 @@
 	"typings": "dist/index.d.ts",
 	"author": "rhangai <hangai.renan@gmail.com>",
 	"license": "MIT",
-	"private": true,
 	"dependencies": {},
 	"devDependencies": {
 		"@types/chance": "^1.1.0",
