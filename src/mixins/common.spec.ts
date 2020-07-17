@@ -3,11 +3,11 @@ import { Chance } from "chance";
 import { testCreateFetcherVm } from "../test/fetcher";
 import { of, NEVER, throwError, from } from "rxjs";
 import { switchMap, map } from "rxjs/operators";
-import { createFetcherMixin } from "./common";
+import { createFetcherMixinFactory } from "./common";
 
 describe("mixins#common", () => {
 	const chance = new Chance();
-	const FetcherCommonMixin = createFetcherMixin(Vue, {
+	const FetcherCommonMixin = createFetcherMixinFactory(Vue, {
 		createFetch(vm, options) {
 			return (context) =>
 				from(options.fetch(context)).pipe(map((result) => ({ result })));
@@ -28,7 +28,7 @@ describe("mixins#common", () => {
 			string: chance.string(),
 			number: chance.integer(),
 		};
-		const vm = testCreateFetcherVm(Test, fetcher);
+		const vm = testCreateFetcherVm(Test, { fetcher });
 		expect(vm.state).toBeDefined();
 		expect(vm.state.loading).toBe(false);
 		expect(vm.state.error).toBe(null);

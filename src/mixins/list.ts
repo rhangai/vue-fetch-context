@@ -1,5 +1,5 @@
 import { VueConstructor } from "../types";
-import { createFetcherMixin, FetcherMixinOptions } from "./common";
+import { createFetcherMixinFactory, FetcherMixinOptions } from "./common";
 import { of } from "rxjs";
 import { switchMap } from "rxjs/operators";
 import { watch } from "../util";
@@ -23,7 +23,15 @@ export type FetcherMixinListFactory<IFetcher> = <T = unknown>(
 export function createFetcherMixinListFactory<IFetcher>(
 	vue: VueConstructor
 ): FetcherMixinListFactory<IFetcher> {
-	return createFetcherMixin<IFetcher, FetchMixinListTypes>(vue, {
+	return createFetcherMixinFactory<IFetcher, FetchMixinListTypes>(vue, {
+		props(options) {
+			return {
+				items: {
+					type: Array,
+					default: null,
+				},
+			};
+		},
 		createFetch(vm, options) {
 			const items$ = watch<unknown[] | null>(vm, "items");
 			return (context) => {

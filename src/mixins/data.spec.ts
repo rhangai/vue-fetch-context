@@ -23,7 +23,7 @@ describe("mixins#data", () => {
 			string: chance.string(),
 			number: chance.integer(),
 		};
-		const vm = testCreateFetcherVm(Test, fetcher);
+		const vm = testCreateFetcherVm(Test, { fetcher });
 		expect(vm.state).toBeDefined();
 		expect(vm.state.loading).toBe(false);
 		expect(vm.state.error).toBe(null);

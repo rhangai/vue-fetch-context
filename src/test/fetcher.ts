@@ -1,10 +1,20 @@
 import Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { createFetcherProvider } from "../components/provider";
+import { VueConstructor } from "vue/types/umd";
 
 const FetcherProvider = createFetcherProvider(Vue);
 
-export function testCreateFetcherVm(component: any, fetcher: any = {}): any {
+type TestCreateFetcherVmOptions = {
+	fetcher?: any;
+	props?: Record<string, unknown>;
+};
+
+export function testCreateFetcherVm(
+	component: VueConstructor,
+	options: TestCreateFetcherVmOptions = {}
+): any {
+	const fetcher = options.fetcher ?? {};
 	const wrapper = mount({
 		components: {
 			FetcherProvider,
@@ -12,10 +22,11 @@ export function testCreateFetcherVm(component: any, fetcher: any = {}): any {
 		},
 		data: () => ({
 			fetcher,
+			props: options.props ?? {},
 		}),
 		template: `
 				<fetcher-provider :fetcher="fetcher">
-					<test ref="test" />
+					<test ref="test" v-bind="props" />
 				</fetcher-provider>
 			`,
 	});

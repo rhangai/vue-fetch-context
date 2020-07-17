@@ -63,10 +63,10 @@ export type FetcherMixinOptions<
  * Create a factory using common options
  * @param factoryOptions
  */
-export function createFetcherMixin<IFetcher, T extends FetcherMixinTypes>(
-	vue: VueConstructor,
-	factoryOptions: FetcherMixinFactoryOptions<T>
-) {
+export function createFetcherMixinFactory<
+	IFetcher,
+	T extends FetcherMixinTypes
+>(vue: VueConstructor, factoryOptions: FetcherMixinFactoryOptions<T>) {
 	// Return the mixin factory
 	return (options: FetcherMixinOptions<IFetcher, T["Result"], T>) => {
 		const stateKey = options.stateKey ?? "state";

@@ -2,7 +2,6 @@ import { VueConstructor } from "../types";
 import { FetcherMixinBaseFactory, createFetcherMixinBaseFactory } from "./base";
 import { FetcherMixinDataFactory, createFetcherMixinDataFactory } from "./data";
 import { FetcherMixinListFactory, createFetcherMixinListFactory } from "./list";
-import { Observable, of } from "rxjs";
 
 export type VueFetcherMixins<IFetcher> = {
 	readonly Base: FetcherMixinBaseFactory<IFetcher>;

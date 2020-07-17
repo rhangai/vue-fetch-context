@@ -16,6 +16,6 @@ describe("mixins#base", () => {
 			string: chance.string(),
 			number: chance.integer(),
 		};
-		testCreateFetcherVm(Test, fetcher);
+		testCreateFetcherVm(Test, { fetcher });
 	});
 });
