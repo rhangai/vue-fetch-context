@@ -6,9 +6,8 @@ import {
 	combineLatest,
 } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
-import { Vue, VueConstructor } from "../types";
+import { Vue, VueConstructor, VueWatchOptions, VuePropOptions } from "../types";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
-import { PropOptions } from "vue/types/umd";
 import { watch } from "../util/watch";
 
 export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
@@ -23,6 +22,7 @@ export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 export type FetcherMixinFetchContextBase<IFetcher> = {
 	vm: Vue;
 	fetcher: IFetcher;
+	watch<T>(prop: string | (() => T), options?: VueWatchOptions): Observable<T>;
 	loader<T>(): MonoTypeOperatorFunction<T>;
 };
 
@@ -30,7 +30,7 @@ export type FetcherMixinFetchContextBase<IFetcher> = {
  * Options for the factory
  */
 export type FetcherMixinFactoryOptions<T extends FetcherMixinTypes> = {
-	props?: Record<string, PropOptions>;
+	props?: Record<string, VuePropOptions>;
 	createFetch(
 		vm: Vue,
 		options: FetcherMixinOptions<unknown, T["Result"], T>
@@ -119,21 +119,28 @@ export function createFetcherMixinFactory<
 					// Observable for the fetcher
 					switchMap((skip: boolean) => {
 						if (skip) return of(null);
-						const loader = <T>() =>
-							tap<T>(() => {
-								this[stateKey].loading = true;
-							});
+
+						// Create the partial context to pass to the fetcher
+						const partialContext: Omit<
+							FetcherMixinFetchContextBase<IFetcher>,
+							"fetcher"
+						> = {
+							vm,
+
+							loader: <T>() =>
+								tap<T>(() => {
+									this[stateKey].loading = true;
+								}),
+
+							watch: <T>(prop: any, options: any) =>
+								watch<T>(vm, prop, options),
+						};
+
 						if (options.autoLoader !== false) {
 							this[stateKey].loading = true;
 						}
 						return combineLatest(fetcher$).pipe(
-							switchMap(([fetcher]) =>
-								fetch({
-									vm,
-									loader: loader,
-									fetcher,
-								})
-							)
+							switchMap(([fetcher]) => fetch({ fetcher, ...partialContext }))
 						);
 					})
 				);
