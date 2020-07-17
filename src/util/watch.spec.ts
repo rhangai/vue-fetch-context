@@ -1,4 +1,4 @@
-import { watch } from "./util";
+import { watch } from "./watch";
 import Vue from "vue";
 import { tap, take, skip } from "rxjs/operators";
 import { Observable } from "rxjs";

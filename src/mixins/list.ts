@@ -2,7 +2,7 @@ import { VueConstructor } from "../types";
 import { createFetcherMixinFactory, FetcherMixinOptions } from "./common";
 import { of } from "rxjs";
 import { switchMap } from "rxjs/operators";
-import { watch } from "../util";
+import { watch } from "../util/watch";
 
 export type FetcherMixinListResult<T = unknown> = { items: T[] };
 

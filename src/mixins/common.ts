@@ -9,7 +9,7 @@ import { switchMap, tap } from "rxjs/operators";
 import { Vue, VueConstructor } from "../types";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { PropOptions } from "vue/types/umd";
-import { watch } from "../util";
+import { watch } from "../util/watch";
 
 export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 	Context: Context;
