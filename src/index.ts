@@ -1,2 +1,6 @@
-export { VueFetcherMixins, createFetcherMixins } from "./mixins";
-export { VueFetcher } from "./plugin";
+export {
+	VueFetchContextMixins,
+	createFetchContextMixins,
+	FetchResult,
+} from "./mixins";
+export { VueFetchContext } from "./plugin";

@@ -1,8 +1,8 @@
-import * as VueFetcherExport from "./index";
+import * as VueFetchContextExport from "./index";
 
 describe("index", () => {
 	it("should export", () => {
-		expect(VueFetcherExport).toHaveProperty("VueFetcher");
-		expect(VueFetcherExport).toHaveProperty("createFetcherMixins");
+		expect(VueFetchContextExport).toHaveProperty("VueFetchContext");
+		expect(VueFetchContextExport).toHaveProperty("createFetchContextMixins");
 	});
 });

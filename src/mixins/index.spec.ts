@@ -1,8 +1,8 @@
 import Vue from "vue";
-import { createFetcherMixins } from "./index";
+import { createFetchContextMixins } from "./index";
 
 describe("mixins", () => {
-	const mixins: any = createFetcherMixins(Vue);
+	const mixins: any = createFetchContextMixins(Vue);
 
 	it("should create mixins", () => {
 		expect(typeof mixins.Base).toBe("function");
