@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Chance } from "chance";
 import { testCreateFetcherVm } from "../test/fetcher";
-import { of, NEVER, throwError, from } from "rxjs";
+import { of, NEVER, throwError, from, Subscription } from "rxjs";
 import { switchMap, map } from "rxjs/operators";
 import { createFetcherMixinFactory } from "./common";
 
@@ -33,8 +33,10 @@ describe("mixins#common", () => {
 		expect(vm.state.loading).toBe(false);
 		expect(vm.state.error).toBe(null);
 		expect(vm.state.result).toBe(fetcher.string);
+		expect(vm.$_vueFetcherSubscription).toBeInstanceOf(Subscription);
 
 		vm.$destroy();
+		expect(vm.$_vueFetcherSubscription).toHaveProperty("closed", true);
 	});
 
 	it("should provide with loading", async () => {
@@ -77,14 +79,11 @@ describe("mixins#common", () => {
 	});
 
 	it("should react", async () => {
-		let counter = 0;
+		const fetch = jest.fn(() => of([]));
 		const Test = Vue.extend({
 			mixins: [
 				FetcherCommonMixin({
-					fetch({ fetcher }: any) {
-						counter += 1;
-						return of([]);
-					},
+					fetch,
 				}),
 			],
 			template: `<div></div>`,
@@ -95,7 +94,7 @@ describe("mixins#common", () => {
 		wrapperVm.fetcher.new = false;
 		await wrapperVm.$nextTick();
 		vm.$destroy();
-		expect(counter).toBe(3);
+		expect(fetch).toHaveBeenCalledTimes(3);
 	});
 
 	describe("skip", () => {

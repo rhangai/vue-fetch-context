@@ -1,8 +1,16 @@
 import Vue from "vue";
-import { createFetchContextComponent } from "./context";
-import { mount } from "@vue/test-utils";
+import {
+	createFetchContextComponent,
+	IFetchContextComponent,
+	IFetchContext,
+} from "./context";
+import { Wrapper, mount } from "@vue/test-utils";
 import { FETCH_CONTEXT_PROVIDE } from "../constants";
 import { Chance } from "chance";
+
+interface TestComponent extends Vue {
+	fetchContext: IFetchContext<any>;
+}
 
 describe("components#FetchContext", () => {
 	const FetchContext = createFetchContextComponent(Vue);
@@ -19,30 +27,65 @@ describe("components#FetchContext", () => {
 		expect(wrapper.vm.fetcherValue).toBeDefined();
 	});
 
-	it("should provide", () => {
+	describe("component", () => {
 		const fetcher = {
 			string: chance.string(),
 			number: chance.integer(),
 		};
-		const wrapper = mount({
-			components: {
-				FetchContext,
-				Test,
-			},
-			data: () => ({
-				fetcher,
-			}),
-			template: `
-				<fetch-context :fetcher="fetcher">
+
+		let wrapper: Wrapper<Vue>;
+		let fetchContextVm: IFetchContextComponent<any>;
+		let testVm: TestComponent;
+		beforeEach(() => {
+			wrapper = mount({
+				components: {
+					FetchContext,
+					Test,
+				},
+				data: () => ({
+					fetcher: { ...fetcher },
+				}),
+				template: `
+				<fetch-context :fetcher="fetcher" ref="fetchContext">
 					<test ref="test" />
 				</fetch-context>
 			`,
+			});
+
+			fetchContextVm = wrapper.vm.$refs.fetchContext as any;
+			testVm = wrapper.vm.$refs.test as any;
 		});
 
-		const testVm: any = wrapper.vm.$refs.test;
-		expect(testVm).toBeDefined();
-		expect(testVm.fetchContext).toBeDefined();
-		expect(testVm.fetchContext.fetcher).toEqual(fetcher);
+		afterEach(() => {
+			fetchContextVm = null as any;
+			testVm = null as any;
+			wrapper.destroy();
+		});
+
+		it("should provide the fetcher", function () {
+			expect(testVm).toBeDefined();
+			expect(testVm.fetchContext).toBeDefined();
+			expect(testVm.fetchContext.fetcher).toEqual(fetcher);
+		});
+
+		it("should refresh", function () {
+			const handler = jest.fn();
+			const subscription = testVm.fetchContext.fetcher$.subscribe(handler);
+			fetchContextVm.refresh();
+			subscription.unsubscribe();
+			expect(handler).toHaveBeenCalledTimes(2);
+		});
+
+		it("should be reactive", async () => {
+			const newFetcher = {
+				string: chance.string(),
+				number: chance.integer(),
+			};
+			// @ts-ignore
+			wrapper.vm.fetcher = newFetcher;
+			await wrapper.vm.$nextTick();
+			expect(testVm.fetchContext.fetcher).toEqual(newFetcher);
+		});
 	});
 
 	it("should inherit providers", () => {
@@ -86,40 +129,5 @@ describe("components#FetchContext", () => {
 			...parentFetcher,
 			...childFetcher,
 		});
-	});
-
-	it("should be reactive", async () => {
-		const fetcher = {
-			string: chance.string(),
-			number: chance.integer(),
-		};
-		const wrapper = mount({
-			components: {
-				FetchContext,
-				Test,
-			},
-			data: () => ({
-				fetcher,
-			}),
-			template: `
-				<fetch-context :fetcher="fetcher">
-					<test ref="test" />
-				</fetch-context>
-			`,
-		});
-
-		const testVm: any = wrapper.vm.$refs.test;
-		expect(testVm).toBeDefined();
-		expect(testVm.fetchContext).toBeDefined();
-		expect(testVm.fetchContext.fetcher).toEqual(fetcher);
-
-		const newFetcher = {
-			string: chance.string(),
-			number: chance.integer(),
-		};
-		// @ts-ignore
-		wrapper.vm.fetcher = newFetcher;
-		await wrapper.vm.$nextTick();
-		expect(testVm.fetchContext.fetcher).toEqual(newFetcher);
 	});
 });

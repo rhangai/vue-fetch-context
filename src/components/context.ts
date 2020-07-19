@@ -7,7 +7,7 @@ import { Observable, BehaviorSubject, ReplaySubject, Subscription } from "rxjs";
 /**
  * The fetcher context. This is what is provided by the <fetch-context> component
  */
-interface IFetchContext<IFetcher> {
+export interface IFetchContext<IFetcher> {
 	readonly fetcher: IFetcher;
 	readonly fetcher$: Observable<IFetcher>;
 }
@@ -15,7 +15,7 @@ interface IFetchContext<IFetcher> {
 /**
  * The context component
  */
-interface FetchContextComponent<IFetcher> extends Vue {
+export interface IFetchContextComponent<IFetcher> extends Vue {
 	/**
 	 * Parent fetcher, if any
 	 */
@@ -33,9 +33,13 @@ interface FetchContextComponent<IFetcher> extends Vue {
 	 */
 	readonly fetcherValue: IFetcher;
 	/**
-	 * Fetcher observable
+	 * Subscription
 	 */
 	fetcherSubscription: Subscription;
+	/**
+	 * Refresh the contex
+	 */
+	refresh(): void;
 }
 
 /**
@@ -50,7 +54,7 @@ export function createFetchContextComponent<IFetcher>(vue: VueConstructor) {
 				default: null,
 			},
 		},
-		provide(this: FetchContextComponent<IFetcher>) {
+		provide(this: IFetchContextComponent<IFetcher>) {
 			const self = this;
 			const fetchContext: IFetchContext<IFetcher> = {
 				get fetcher() {
@@ -69,7 +73,7 @@ export function createFetchContextComponent<IFetcher>(vue: VueConstructor) {
 			},
 		},
 		computed: {
-			fetcherValue(this: FetchContextComponent<IFetcher>) {
+			fetcherValue(this: IFetchContextComponent<IFetcher>) {
 				const parentFetcher = this.parentFetchContext?.fetcher;
 				return {
 					...parentFetcher,
@@ -77,22 +81,22 @@ export function createFetchContextComponent<IFetcher>(vue: VueConstructor) {
 				};
 			},
 		},
-		created(this: FetchContextComponent<IFetcher>) {
+		created(this: IFetchContextComponent<IFetcher>) {
 			this.fetcherValue$ = new ReplaySubject<IFetcher>(1);
 			const fetcherValue$ = watch<IFetcher>(this, "fetcherValue");
 			this.fetcherSubscription = fetcherValue$.subscribe(this.fetcherValue$);
 		},
-		beforeDestroy(this: FetchContextComponent<IFetcher>) {
+		beforeDestroy(this: IFetchContextComponent<IFetcher>) {
 			this.fetcherValue$.complete();
 			this.fetcherSubscription!.unsubscribe();
 		},
 		methods: {
-			refresh(this: FetchContextComponent<IFetcher>) {
+			refresh(this: IFetchContextComponent<IFetcher>) {
 				this.fetcherValue$.next(this.fetcherValue);
 			},
 		},
 		render(
-			this: FetchContextComponent<IFetcher>,
+			this: IFetchContextComponent<IFetcher>,
 			createElement: VueCreateElement
 		) {
 			return createElement("div", {}, this.$slots.default);
