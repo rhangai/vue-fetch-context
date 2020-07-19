@@ -243,7 +243,9 @@ export function createFetcherMixinFactory<
 			/**
 			 * Before destroying the mixin, unsubscribe from everything
 			 */
-			beforeDestroy() {},
+			beforeDestroy(this: any) {
+				this.$_vueFetcherSubscription.unsubscribe();
+			},
 			methods: {
 				/**
 				 * Triggers a refresh of the state.
