@@ -163,7 +163,7 @@ export function createFetcherMixinFactory<
 					},
 				});
 
-				const state$: Observable<never> = of(null).pipe(
+				const state$: Observable<never> = stateSubject$.pipe(
 					// Observable for skip
 					switchMap(() => {
 						if (options.skip === false) return of(false);
@@ -200,11 +200,11 @@ export function createFetcherMixinFactory<
 
 						// Observe query changes
 						const query$ = options.query
-							? from(options.query(partialContext))
+							? from(options.query(partialContext)).pipe(result.catch())
 							: of(null);
 
 						// When the query
-						return combineLatest([fetcher$, query$, stateSubject$]).pipe(
+						return combineLatest([fetcher$, query$]).pipe(
 							// Triggers the loading
 							tap(() => {
 								if (options.autoLoader !== false) {

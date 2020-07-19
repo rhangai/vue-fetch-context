@@ -19,6 +19,8 @@ export type ResultSubject<R> = {
 	operator<T>(
 		callback?: (value: T) => ObservableInput<R>
 	): OperatorFunction<T, never>;
+
+	catch<T = unknown>(): OperatorFunction<T, T>;
 };
 
 export function createResultSubject<R>(
@@ -45,6 +47,12 @@ export function createResultSubject<R>(
 						return empty();
 					})
 				);
+			});
+		},
+		catch: function <T>() {
+			return catchError<T, Observable<T>>((error) => {
+				handler.error(error);
+				return empty();
 			});
 		},
 	};
