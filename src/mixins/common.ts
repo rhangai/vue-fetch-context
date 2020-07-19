@@ -216,18 +216,21 @@ export function createFetcherMixinFactory<
 								return fetch({ fetcher, ...partialContext, query });
 							})
 						);
-					})
+					}),
+					result.catch()
 				);
 
 				// Subscribe to the result
 				const subscription = state$.subscribe({
-					error: (error) => {
+					error: /* istanbul ignore next */ (error) => {
+						// This should never happen
 						this.$set(this, stateKey, {
 							loading: false,
 							error,
 						});
 					},
-					complete: () => {
+					complete: /* istanbul ignore next */ () => {
+						// This should never happen, but, just in case
 						this.$set(this, stateKey, {
 							loading: false,
 							error: null,
@@ -253,7 +256,7 @@ export function createFetcherMixinFactory<
 				[`${stateKey}Refresh`]() {
 					// Trigger a refresh
 					// @ts-ignore
-					this[`${stateKey}State`]?.next(null);
+					this[`${stateKey}Subject`].next(null);
 				},
 			},
 		});

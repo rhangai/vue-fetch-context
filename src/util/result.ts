@@ -15,9 +15,8 @@ export type ResultHandler<R> = {
 export type ResultSubject<R> = {
 	value(value: any): Observable<never>;
 
-	operator(): OperatorFunction<R, never>;
 	operator<T>(
-		callback?: (value: T) => ObservableInput<R>
+		callback: (value: T) => ObservableInput<R>
 	): OperatorFunction<T, never>;
 
 	catch<T = unknown>(): OperatorFunction<T, T>;
@@ -31,12 +30,8 @@ export function createResultSubject<R>(
 			handler.next(value as any);
 			return empty();
 		},
-		operator: function <T>(callback?: (value: T) => ObservableInput<R>) {
+		operator: function <T>(callback: (value: T) => ObservableInput<R>) {
 			return switchMap<T, Observable<never>>((value) => {
-				if (!callback) {
-					handler.next(value as any);
-					return empty();
-				}
 				return from(callback(value)).pipe(
 					switchMap((result) => {
 						handler.next(result);
