@@ -22,8 +22,8 @@ export type FetcherMixinTypes<Context = any, Options = any, Result = any> = {
 /**
  * Basic context
  */
-export type FetcherMixinFetchContextBase<IFetcher> = {
-	vm: Vue;
+export type FetcherMixinFetchContextBase<IFetcher, Vm extends Vue = Vue> = {
+	vm: Vm;
 	fetcher: IFetcher;
 	watch<T>(prop: string | (() => T), options?: VueWatchOptions): Observable<T>;
 	loader<T>(): MonoTypeOperatorFunction<T>;
@@ -65,17 +65,17 @@ export type FetcherMixinOptions<
 	 *
 	 * @param context
 	 */
-	query?(
-		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher>
+	query?<Vm extends Vue = Vue>(
+		context: T["Context"] & FetcherMixinFetchContextBase<IFetcher, Vm>
 	): FetchResult<QueryType>;
 
 	/**
 	 *
 	 * @param context
 	 */
-	fetch(
+	fetch<Vm extends Vue = Vue>(
 		context: T["Context"] &
-			FetcherMixinFetchContextBase<IFetcher> & { query: QueryType }
+			FetcherMixinFetchContextBase<IFetcher, Vm> & { query: QueryType }
 	): FetchResult<ResultType>;
 };
 
