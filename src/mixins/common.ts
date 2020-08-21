@@ -170,7 +170,11 @@ export function createFetcherMixinFactory<
 						return watch<boolean>(
 							this,
 							options.skip ??
-								(() => this.$attrs.disabled || this.$attrs.readonly)
+								(() =>
+									isAttrEnabled(vm.$attrs.disabled) ||
+									isAttrEnabled(vm.$attrs.readonly) ||
+									isAttrEnabled(vm.$props.disabled) ||
+									isAttrEnabled(vm.$props.readonly))
 						);
 					}),
 					// Observable for the fetcher
@@ -263,4 +267,8 @@ export function createFetcherMixinFactory<
 
 		return mixin;
 	};
+}
+
+function isAttrEnabled(prop: any) {
+	return !!prop || prop === "";
 }
